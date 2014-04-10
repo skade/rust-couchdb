@@ -40,6 +40,10 @@ fn main() {
 }
 ```
 
+## Conceptual
+
+Make sure you use mutable pointers to Server and Database if you want to change anything. The API makes sure that immutable handles are read-only.
+
 ## Done
 
 * Reading server info
