@@ -1,4 +1,4 @@
-# rust-couchdb
+# rust-couchdb [![Build Status](https://travis-ci.org/skade/rust-couchdb.svg?branch=master)](https://travis-ci.org/skade/rust-couchdb)
 
 A relaxing Rust lib.
 
