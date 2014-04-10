@@ -9,12 +9,7 @@ Rust, as fresh as possible, no release versions. Tested against 7fbcb4.
 ## Building
 
 ```
-git clone https://github.com/sfackler/rust-openssl.git
-git clone https://github.com/chris-morgan/rust-http.git
-cd rust-http
-./configure && make
-cd ..
-git clone https://github.com/skade/rust-couchdb.git
+git clone --recursive https://github.com/skade/rust-couchdb.git
 cd rust-couchdb
 make
 make test
