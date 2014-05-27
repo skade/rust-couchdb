@@ -24,15 +24,15 @@ use std::io::IoResult;
 
 #[deriving(Encodable,Decodable)]
 pub struct VendorInfo {
-  version: ~str,
-  name: ~str
+  version: String,
+  name: String
 }
 
 #[deriving(Encodable,Decodable)]
 pub struct Info {
-  couchdb: ~str,
+  couchdb: String,
   uuid: Uuid,
-  version: ~str,
+  version: String,
   vendor: VendorInfo
 }
 
@@ -43,37 +43,40 @@ pub struct Okay {
 
 impl Info {
   pub fn version(self) -> Version {
-    semver::parse(self.version).unwrap()
+    semver::parse(self.version.as_slice()).unwrap()
   }
 
-  pub fn message(self) -> ~str {
+  pub fn message(self) -> String {
     self.couchdb
   }
 }
 
 #[deriving(Clone)]
 pub struct Server {
-  host: ~str
+  host: String
 }
 
 impl Server {
-  pub fn new(host: ~str) -> Server {
+  pub fn new(host: String) -> Server {
     Server { host: host }
   }
 
-  fn get(&self, path: ~str) -> IoResult<Vec<u8>> {
+  fn get(&self, path: String) -> IoResult<Vec<u8>> {
     let request: RequestWriter =
               RequestWriter::new(Get,
-              from_str(self.host + path).expect("Invalid URL :-("))
+              from_str(self.host.clone().append(path.as_slice()).as_slice()).expect("Invalid URL :-("))
               .unwrap();
-    let mut response = request.read_response().unwrap();
-    response.read_to_end()
+    let mut response = request.read_response();
+    match response {
+      Ok(mut res) => { res.read_to_end() },
+      Err(error) => { fail!("(C)ouch!") }
+    }
   }
 
-  fn put(&self, path: ~str, body: Option<&[u8]>) -> IoResult<Vec<u8>> {
+  fn put(&self, path: String, body: Option<&[u8]>) -> IoResult<Vec<u8>> {
     let mut request: RequestWriter =
               RequestWriter::new(Put,
-              from_str(self.host + path).expect("Invalid URL :-("))
+              from_str(self.host.clone().append(path.as_slice()).as_slice()).expect("Invalid URL :-("))
               .unwrap();
 
     match body {
@@ -85,20 +88,26 @@ impl Server {
     }
 
     let mut response = request.read_response();
-    response.unwrap().read_to_end()
+    match response {
+      Ok(mut res) => { res.read_to_end() },
+      Err(error) => { fail!("(C)ouch!") }
+    }
   }
 
-  fn delete(& self, path: ~str) -> IoResult<Vec<u8>> {
+  fn delete(&self, path: String) -> IoResult<Vec<u8>> {
     let request: RequestWriter =
               RequestWriter::new(Delete,
-              from_str(self.host + path).expect("Invalid URL :-("))
+              from_str(self.host.clone().append(path.as_slice()).as_slice()).expect("Invalid URL :-("))
               .unwrap();
-    let mut response = request.read_response().unwrap();
-    response.read_to_end()
+    let mut response = request.read_response();
+    match response {
+      Ok(mut res) => { res.read_to_end() },
+      Err(error) => { fail!("(C)ouch!") }
+    }
   }
 
-  pub fn create_database(&mut self, name: ~str) -> Database {
-    let body = self.put(~"/" + name.clone(), None).unwrap();
+  pub fn create_database(&mut self, name: String) -> Database {
+    let body = self.put(String::from_str("/").append(name.as_slice()), None).unwrap();
 
     let mut reader = BufReader::new(body.as_slice());
     let json = from_reader(&mut reader);
@@ -107,15 +116,16 @@ impl Server {
     let result = Decodable::decode(&mut decoder);
     let ok: Okay = result.unwrap();
     if ok.ok {
-      Database { name: name, server: ~self.clone() }
+      Database { name: name, server: self.clone() }
     } else {
       fail!("(C)ouch")
     }
   }
 
-  pub fn delete_database(&mut self, name: ~str) -> bool {
-    let result = self.delete(~"/" + name.clone());
+  pub fn delete_database(&mut self, name: String) -> bool {
+    let result = self.delete(String::from_str("/").append(name.as_slice()));
 
+    // TODO: Yes, don't do that, but for the sake of a quick hack
     match result {
       Ok(_) => { true },
       Err(_) => { false }
@@ -129,7 +139,7 @@ impl Server {
   }
 
   pub fn info(self) -> Info {
-    let body = self.get(~"/").unwrap();
+    let body = self.get(String::from_str("/")).unwrap();
 
     let mut reader = BufReader::new(body.as_slice());
     let json = from_reader(&mut reader);
@@ -141,16 +151,16 @@ impl Server {
 }
 
 pub struct Database {
-  name: ~str,
-  server: ~Server
+  name: String,
+  server: Server
 }
 
 pub trait Document {
-  fn id(&self) -> ~str;
+  fn id(&self) -> String;
 }
 
 impl Database {
-  pub fn name(self) -> ~str {
+  pub fn name(self) -> String {
     self.name
   }
 
