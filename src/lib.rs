@@ -17,7 +17,6 @@ use http::method::{Get,Put,Delete};
 use std::io::BufReader;
 use std::io;
 use serialize::{json, Encodable, Decodable};
-use serialize::json::Json;
 use serialize::json::Encoder;
 use serialize::json::from_reader;
 use std::io::IoResult;
@@ -66,10 +65,10 @@ impl Server {
               RequestWriter::new(Get,
               from_str(self.host.clone().append(path.as_slice()).as_slice()).expect("Invalid URL :-("))
               .unwrap();
-    let mut response = request.read_response();
+    let response = request.read_response();
     match response {
       Ok(mut res) => { res.read_to_end() },
-      Err(error) => { fail!("(C)ouch!") }
+      Err(error) => { fail!("(C)ouch! {:?}", error) }
     }
   }
 
@@ -87,10 +86,10 @@ impl Server {
       None => {}
     }
 
-    let mut response = request.read_response();
+    let response = request.read_response();
     match response {
       Ok(mut res) => { res.read_to_end() },
-      Err(error) => { fail!("(C)ouch!") }
+      Err(error) => { fail!("(C)ouch! {:?}", error) }
     }
   }
 
@@ -99,10 +98,10 @@ impl Server {
               RequestWriter::new(Delete,
               from_str(self.host.clone().append(path.as_slice()).as_slice()).expect("Invalid URL :-("))
               .unwrap();
-    let mut response = request.read_response();
+    let response = request.read_response();
     match response {
       Ok(mut res) => { res.read_to_end() },
-      Err(error) => { fail!("(C)ouch!") }
+      Err(error) => { fail!("(C)ouch! {:?}", error) }
     }
   }
 
