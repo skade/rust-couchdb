@@ -22,7 +22,7 @@ test: $(libcouchdb_so)
 	build/test
 
 $(libhttp_so):
-	cd rust-http; WITH_OPENSSL=../rust-openssl ./configure && make
+	cd rust-http; ./configure && make
 
 clean:
 	rm -r build
