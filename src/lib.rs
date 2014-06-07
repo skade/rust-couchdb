@@ -9,6 +9,7 @@ extern crate http;
 extern crate uuid;
 extern crate semver;
 extern crate serialize;
+extern crate debug;
 
 use uuid::Uuid;
 use semver::Version;
